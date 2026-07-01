@@ -1,5 +1,7 @@
 # Archivos generados
-datos/
+datos/*.csv
+datos/cache_*.json
+datos/api_diario.json
 reportes/
 __pycache__/
 *.pyc

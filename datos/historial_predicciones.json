@@ -1,0 +1,186 @@
+{
+  "partidos": [
+    {
+      "id": "Mexico_vs_Ecuador_2026-06-30",
+      "local": "Mexico",
+      "visitante": "Ecuador",
+      "fecha": "2026-06-30",
+      "resultado_real": {
+        "goles_local": 2,
+        "goles_visita": 0,
+        "marcador": "2-0",
+        "ganador": "local"
+      },
+      "prediccion_poisson": {
+        "marcador": "1-0",
+        "prob": 12.9,
+        "ganador": "local"
+      },
+      "prediccion_apuestas": {
+        "favorito": "Mexico",
+        "prob": 55.0,
+        "ganador": "local"
+      },
+      "prediccion_prensa": {
+        "favorito": null,
+        "equilibrado": true,
+        "ganador": null
+      },
+      "bookmakers_pred": {
+        "bet365": {
+          "favorito": "local",
+          "cuota": 1.82
+        },
+        "bwin": {
+          "favorito": "local",
+          "cuota": 1.82
+        }
+      },
+      "fuentes_prensa": [
+        "AS Chile",
+        "AS México",
+        "Diario AS",
+        "ESPN Deportes",
+        "FIFA",
+        "MARCA",
+        "Sports Illustrated"
+      ],
+      "timestamp_pred": "2026-06-30T23:57:15.536066",
+      "timestamp_result": "2026-06-30T23:57:15.556642"
+    },
+    {
+      "id": "France_vs_Sweden_2026-06-30",
+      "local": "France",
+      "visitante": "Sweden",
+      "fecha": "2026-06-30",
+      "resultado_real": {
+        "goles_local": 3,
+        "goles_visita": 0,
+        "marcador": "3-0",
+        "ganador": "local"
+      },
+      "prediccion_poisson": {
+        "marcador": "1-0",
+        "prob": 15.3,
+        "ganador": "local"
+      },
+      "prediccion_apuestas": {
+        "favorito": "France",
+        "prob": 72.0,
+        "ganador": "local"
+      },
+      "prediccion_prensa": {
+        "favorito": null,
+        "equilibrado": true,
+        "ganador": null
+      },
+      "bookmakers_pred": {
+        "bet365": {
+          "favorito": "local",
+          "cuota": 1.39
+        },
+        "bwin": {
+          "favorito": "local",
+          "cuota": 1.39
+        }
+      },
+      "fuentes_prensa": [
+        "ESPN Chile",
+        "El Economista - Últimas noticias económicas y financieras",
+        "MARCA",
+        "Sports Illustrated"
+      ],
+      "timestamp_pred": "2026-06-30T23:57:17.205855",
+      "timestamp_result": "2026-06-30T23:57:17.256761"
+    },
+    {
+      "id": "Norway_vs_Ivory_Coast_2026-06-30",
+      "local": "Norway",
+      "visitante": "Ivory Coast",
+      "fecha": "2026-06-30",
+      "resultado_real": {
+        "goles_local": 2,
+        "goles_visita": 1,
+        "marcador": "2-1",
+        "ganador": "local"
+      },
+      "prediccion_poisson": {
+        "marcador": "1-0",
+        "prob": 12.7,
+        "ganador": "local"
+      },
+      "prediccion_apuestas": {
+        "favorito": "Norway",
+        "prob": 52.0,
+        "ganador": "local"
+      },
+      "prediccion_prensa": {
+        "favorito": null,
+        "equilibrado": true,
+        "ganador": null
+      },
+      "bookmakers_pred": {
+        "bet365": {
+          "favorito": "local",
+          "cuota": 1.92
+        },
+        "bwin": {
+          "favorito": "local",
+          "cuota": 1.92
+        }
+      },
+      "fuentes_prensa": [
+        "Diario AS",
+        "FIFA"
+      ],
+      "timestamp_pred": "2026-06-30T23:57:18.813682",
+      "timestamp_result": "2026-06-30T23:57:18.831283"
+    },
+    {
+      "id": "Netherlands_vs_Morocco_2026-06-30",
+      "local": "Netherlands",
+      "visitante": "Morocco",
+      "fecha": "2026-06-30",
+      "resultado_real": {
+        "goles_local": 1,
+        "goles_visita": 1,
+        "marcador": "1-1",
+        "ganador": "empate"
+      },
+      "prediccion_poisson": {
+        "marcador": "1-0",
+        "prob": 13.4,
+        "ganador": "local"
+      },
+      "prediccion_apuestas": {
+        "favorito": "Netherlands",
+        "prob": 58.0,
+        "ganador": "local"
+      },
+      "prediccion_prensa": {
+        "favorito": null,
+        "equilibrado": true,
+        "ganador": null
+      },
+      "bookmakers_pred": {
+        "bet365": {
+          "favorito": "local",
+          "cuota": 1.72
+        },
+        "bwin": {
+          "favorito": "local",
+          "cuota": 1.72
+        }
+      },
+      "fuentes_prensa": [
+        "Diario AS",
+        "FIFA",
+        "MARCA",
+        "Official FIFA Store",
+        "Sports Illustrated"
+      ],
+      "timestamp_pred": "2026-06-30T23:57:20.300729",
+      "timestamp_result": "2026-06-30T23:57:20.355383"
+    }
+  ]
+}
