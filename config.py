@@ -15,6 +15,15 @@ ODDS_FORMAT  = "decimal"
 NEWS_LANG    = "es"
 NEWS_COUNTRY = "CL"
 
+# ── Resumen de prensa con IA (opcional) ─────────────────────────────────────
+# Si se define GEMINI_API_KEY, el resumen editorial se genera con Gemini
+# (mejor redacción y conclusiones sobre bajas/lesionados). Sin key, se usa
+# el resumen por reglas (generar_resumen_prensa). Pensado para uso LOCAL:
+# no configurar esta key en las variables de entorno de Vercel para evitar
+# timeouts/costos en producción.
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+GEMINI_MODEL   = "gemini-2.0-flash"
+
 # Directorios de salida (en Vercel se usa /tmp)
 BASE_DIR     = os.path.dirname(os.path.abspath(__file__))
 DATOS_DIR    = os.environ.get("DATOS_DIR", os.path.join(BASE_DIR, "datos"))

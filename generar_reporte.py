@@ -141,25 +141,21 @@ body {
   flex-direction: column;
 }
 .sidebar { display: none; }
-.center  { display: none; }
-.panel   {
-  border-left: none;
+.center  {
   display: flex; flex-direction: column;
   min-height: calc(100vh - 56px);
 }
 
-/* Desktop: 3 columns, fixed height */
+/* Desktop: 2 columns, fixed height. El centro muestra el detalle del partido seleccionado arriba. */
 @media (min-width: 769px) {
   body { height: 100vh; overflow: hidden; }
   .layout {
     display: grid;
-    grid-template-columns: 200px 1fr 360px;
+    grid-template-columns: 200px 1fr;
     height: calc(100vh - 64px);
   }
   .sidebar { display: block; }
-  .center  { display: block; overflow-y: auto; }
-  .panel {
-    border-left: 1px solid var(--border);
+  .center {
     overflow-y: auto; min-height: unset;
     display: flex; flex-direction: column;
   }
@@ -194,79 +190,10 @@ body {
 .sidebar-item.active .sidebar-count { background: #d1fae5; color: var(--primary); }
 
 /* ── CENTER ── */
-.center { overflow-y: auto; padding: 20px 16px; }
-.center-header {
-  display: flex; align-items: flex-end; justify-content: space-between;
-  margin-bottom: 16px;
-}
-.center-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
-.center-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
-.center-date { font-size: 11px; color: #94a3b8; }
-
-/* ── MATCH CARD ── */
-.match-card {
-  background: var(--surface); border-radius: var(--r-md);
-  border: 1.5px solid var(--border);
-  padding: 16px 18px; margin-bottom: 10px; cursor: pointer;
-  transition: box-shadow 0.2s, border-color 0.2s, transform 0.15s;
-  position: relative; overflow: hidden;
-}
-.match-card::before {
-  content: ""; position: absolute; left: 0; top: 0; bottom: 0;
-  width: 3px; background: transparent; transition: background 0.2s;
-}
-.match-card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
-}
-.match-card:hover::before { background: #e2e8f0; }
-.match-card.selected { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(16,185,129,.12); }
-.match-card.selected::before { background: var(--primary); }
-.match-card.live-match {
-  border-color: rgba(239,68,68,.35);
-  background: linear-gradient(135deg, #fff5f5 0%, white 60%);
-}
-.match-card.live-match::before { background: var(--live); }
-.match-card.live-match:hover { box-shadow: 0 4px 20px rgba(239,68,68,.15); }
-
-.card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-.card-label {
-  font-size: 9px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 1px; color: #94a3b8;
-  display: flex; align-items: center; gap: 6px;
-}
-.card-title { font-size: 15px; font-weight: 800; letter-spacing: -0.3px; margin-bottom: 2px; }
-.card-date { font-size: 11px; color: var(--muted); margin-bottom: 14px; }
-
-.card-teams { display: flex; flex-direction: column; gap: 2px; }
-.card-team {
-  display: flex; align-items: center; gap: 10px;
-  padding: 6px 0;
-}
-.card-team + .card-team { border-top: 1px solid #f1f5f9; }
-.card-flag { font-size: 20px; width: 26px; text-align: center; }
-.card-name { flex: 1; font-size: 13px; font-weight: 600; color: #1e293b; }
-.card-odds { font-size: 11px; color: #94a3b8; margin-right: 8px; font-weight: 500; }
-
-.prob-pill {
-  border-radius: 99px; padding: 4px 12px;
-  font-size: 12px; font-weight: 800; min-width: 54px; text-align: center;
-  transition: transform 0.15s;
-}
-.match-card:hover .prob-pill { transform: scale(1.05); }
-.prob-pill.high { background: #ecfdf5; color: var(--primary); border: 1.5px solid #a7f3d0; }
-.prob-pill.mid  { background: #fffbeb; color: #d97706;        border: 1.5px solid #fde68a; }
-.prob-pill.low  { background: #fff1f2; color: var(--away);    border: 1.5px solid #fecdd3; }
-
-/* ── RIGHT PANEL ── */
+/* ── DETALLE DEL PARTIDO (dentro del centro) ── */
 .panel {
-  background: var(--surface); border-left: 1px solid var(--border);
-  overflow-y: auto; display: flex; flex-direction: column;
-}
-.panel-header {
-  padding: 20px 20px 0; position: sticky; top: 0;
-  background: var(--surface); z-index: 5;
-  border-bottom: 1px solid var(--border); padding-bottom: 0;
+  background: var(--surface);
+  flex: 1; display: flex; flex-direction: column;
 }
 .panel-eyebrow {
   font-size: 10px; font-weight: 700; text-transform: uppercase;
@@ -274,21 +201,7 @@ body {
   display: flex; align-items: center; gap: 8px;
 }
 .panel-title { font-size: 19px; font-weight: 800; letter-spacing: -0.4px; line-height: 1.3; margin-bottom: 14px; }
-.panel-tabs { display: flex; gap: 0; margin: 0 -20px; }
-.panel-tab {
-  flex: 1; padding: 10px 16px; text-align: center;
-  font-size: 12px; font-weight: 700; cursor: pointer;
-  color: var(--muted); border-bottom: 2px solid transparent;
-  transition: color 0.2s, border-color 0.2s;
-  letter-spacing: 0.3px; text-transform: uppercase;
-}
-.panel-tab:hover { color: var(--text); }
-.panel-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
 .panel-body { padding: 20px; flex: 1; }
-
-/* ── TAB CONTENT ── */
-.tab-content { display: none; }
-.tab-content.active { display: block; }
 
 /* ── WINNER OUTCOMES ── */
 .outcome-card {
@@ -428,6 +341,16 @@ body {
   background: white; border: 1px solid #a7f3d0;
   border-radius: 99px; padding: 3px 10px;
 }
+.press-ia-badge {
+  font-size: 9px; font-weight: 700; color: #7c3aed;
+  background: #ede9fe; border-radius: 99px;
+  padding: 2px 8px; letter-spacing: 0.3px; text-transform: none;
+}
+.press-injury-note {
+  font-size: 12.5px; color: #92400e; line-height: 1.6;
+  background: #fffbeb; border: 1px solid #fde68a;
+  border-radius: 8px; padding: 8px 11px; margin-top: 10px;
+}
 
 /* ── FUENTES COLAPSABLES ── */
 .sources-details { margin-top: 10px; }
@@ -501,12 +424,6 @@ details[open] > .sources-toggle::before { transform: rotate(90deg); }
 .no-news-note code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px;
   font-size: 11px; color: #475569; }
 
-/* ── EMPTY STATE ── */
-.empty { text-align: center; padding: 40px 20px; color: #94a3b8; }
-.empty-icon { font-size: 40px; margin-bottom: 12px; }
-.empty-text { font-size: 14px; font-weight: 600; }
-.empty-sub  { font-size: 12px; margin-top: 4px; }
-
 /* ── MOBILE HEADER COMPACTO ── */
 @media (max-width: 768px) {
   .header { height: 56px; padding: 0 12px; gap: 8px; }
@@ -542,17 +459,13 @@ function _mid(nombre) {
 }
 
 function seleccionar(nombre) {
-  // Tarjetas centro
-  document.querySelectorAll('.match-card').forEach(c => c.classList.remove('selected'));
-  const card = document.querySelector('[data-partido="' + nombre + '"]');
-  if (card) {
-    card.classList.add('selected');
-    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
-  // Tarjetas header
+  // Tarjetas del header (unico selector de partido)
   document.querySelectorAll('.feat-card').forEach(c => c.classList.remove('active'));
   const feat = document.querySelector('.feat-card[data-partido="' + nombre + '"]');
-  if (feat) feat.classList.add('active');
+  if (feat) {
+    feat.classList.add('active');
+    feat.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }
 
   // Cambiar cuerpo del panel
   document.querySelectorAll('.match-body').forEach(b => b.classList.remove('active'));
@@ -563,16 +476,16 @@ function seleccionar(nombre) {
   const eyebrow = document.getElementById('panel-eyebrow');
   const title   = document.getElementById('panel-title');
   if (eyebrow && title) {
-    const isLive = card && card.classList.contains('live-match');
+    const isLive = feat && feat.classList.contains('live-card');
     eyebrow.innerHTML = isLive
       ? '<span class="live-badge"><span class="live-dot"></span>EN VIVO</span>'
       : 'FIFA WORLD CUP 2026';
     title.textContent = nombre;
   }
 
-  // Desktop: scroll panel al tope
-  const panel = document.querySelector('.panel');
-  if (panel) panel.scrollTop = 0;
+  // Desktop: scroll del centro al tope
+  const center = document.querySelector('.center');
+  if (center) center.scrollTop = 0;
 
   // Mobile: hacer scroll a la seccion del panel
   if (window.innerWidth <= 768) {
@@ -584,14 +497,6 @@ function seleccionar(nombre) {
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
-
-def _pill(pct: float) -> str:
-    pct = int(pct)
-    if pct >= 55:   cls = "high"
-    elif pct >= 40: cls = "mid"
-    else:           cls = "low"
-    return f'<span class="prob-pill {cls}">{pct}%</span>'
-
 
 def _topbar(todos: list, partido_actual: str, api_uso: dict = None) -> str:
     items = ""
@@ -683,65 +588,12 @@ def _sidebar(n: int) -> str:
       <div class="sidebar-item active">FIFA World Cup <span class="sidebar-count">{n}</span></div>
       <div class="sidebar-section">Mercado</div>
       <div class="sidebar-item active">Ganador del partido</div>
-      <div class="sidebar-item">Marcador exacto</div>
       <div class="sidebar-section">Fase</div>
       <div class="sidebar-item">Octavos de final</div>
       <div class="sidebar-item">Cuartos de final</div>
       <div class="sidebar-item">Semifinales</div>
       <div class="sidebar-item">Final</div>
     </nav>"""
-
-
-def _match_cards(todos: list, partido_actual: str) -> str:
-    if not todos:
-        return """<div class="empty">
-          <div class="empty-icon">📊</div>
-          <div class="empty-text">Sin datos de apuestas</div>
-          <div class="empty-sub">Configura ODDS_API_KEY en config.py</div>
-        </div>"""
-
-    cards = ""
-    for p in todos:
-        nombre   = p["partido"]
-        local    = p["local"]
-        visita   = p["visitante"]
-        fecha    = p["fecha"]
-        pb       = p.get("probabilidades", {})
-        pr       = p.get("promedios", {})
-        p1       = int(pb.get(local,  0))
-        p2       = int(pb.get(visita, 0))
-        o1       = pr.get("1", "–")
-        o2       = pr.get("2", "–")
-        en_vivo  = p.get("en_vivo", False)
-        activo   = "selected" if nombre == partido_actual else ""
-        live_cls = "live-match" if en_vivo else ""
-        live_lbl = '<span class="live-badge"><span class="live-dot"></span>EN VIVO</span>' if en_vivo else ""
-
-        cards += f"""
-        <div class="match-card {activo} {live_cls}" data-partido="{nombre}"
-             onclick="seleccionar('{nombre.replace("'", "\\'")}')">
-          <div class="card-top">
-            <div class="card-label">⚽ FIFA WORLD CUP &nbsp;·&nbsp; {fecha}</div>
-            {live_lbl}
-          </div>
-          <div class="card-title">{local} vs {visita}</div>
-          <div class="card-date">{fecha}</div>
-          <div class="card-teams">
-            <div class="card-team">
-              <span class="card-flag">{bandera(local)}</span>
-              <span class="card-name">{local}</span>
-              <span class="card-odds">{o1}x</span>
-              {_pill(p1)}
-            </div>
-            <div class="card-team">
-              <span class="card-flag">{bandera(visita)}</span>
-              <span class="card-name">{visita}</span>
-              <span class="card-odds">{o2}x</span>
-              {_pill(p2)}
-            </div>
-          </div>
-        </div>"""
-    return cards
 
 
 def _panel_winner(partido_apuestas, partido_prensa: dict) -> str:
@@ -995,10 +847,22 @@ def _panel_news(partido_prensa: dict) -> str:
         if puntos:
             tags = "".join(f'<span class="press-key-tag">{p}</span>' for p in puntos)
             tags_html = f'<div class="press-key-points">{tags}</div>'
+
+        conclusion_bajas = resumen_data.get("conclusion_bajas")
+        conclusion_html = (
+            f'<div class="press-injury-note">🩹 <strong>Impacto de bajas:</strong> {conclusion_bajas}</div>'
+            if conclusion_bajas else ""
+        )
+
+        ia_label = (
+            '<span class="press-ia-badge">✨ IA</span>' if resumen_data.get("generado_por_ia") else ""
+        )
+
         summary_html = f"""
         <div class="press-summary">
-          <div class="press-summary-header">📰 Resumen de los medios</div>
+          <div class="press-summary-header">📰 Resumen de los medios{ia_label}</div>
           <div class="press-summary-text">{texto}</div>
+          {conclusion_html}
           {tags_html}
         </div>"""
 
@@ -1039,7 +903,7 @@ def _panel(partido_principal: dict, partido_prensa: dict,
            todos_partidos: list, qr_b64: str = "",
            todas_prensas: dict = None) -> str:
     """
-    Genera el aside con:
+    Genera el panel de detalle (vive dentro del centro, no como columna aparte):
     - Cabecera sticky (título dinámico)
     - Un .match-body por cada partido en todos_partidos (oculto)
     - El partido_principal arranca con .active y tiene noticias
@@ -1078,7 +942,6 @@ def _panel(partido_principal: dict, partido_prensa: dict,
         activo = "active" if nombre == nombre_principal else ""
 
         winner = _panel_winner(p, {"partido": nombre})
-
         scores = _panel_scores(p, {"partido": nombre})
 
         # Prensa: partido principal usa partido_prensa; resto busca en todas_prensas
@@ -1107,21 +970,21 @@ def _panel(partido_principal: dict, partido_prensa: dict,
 
         bodies += f"""
         <div class="match-body {activo}" id="body-{mid}">
-          {conclusion}
-          <div class="section-label">Marcador exacto</div>
-          {scores}
+          {news}
           <div class="section-label" style="margin-top:20px">Ganador del partido</div>
           {winner}
-          {news}
+          <div class="section-label" style="margin-top:20px">Marcador exacto</div>
+          {scores}
+          <div style="margin-top:20px">{conclusion}</div>
         </div>"""
 
     return f"""
-    <aside class="panel">
+    <div class="panel">
       {header}
       <div class="panel-body">
         {bodies}
       </div>
-    </aside>"""
+    </div>"""
 
 
 # ── QR y red local ───────────────────────────────────────────────────────────
@@ -1261,14 +1124,12 @@ def construir_html(partido_apuestas, partido_prensa: dict, todos_partidos: list 
                    todas_prensas: dict = None) -> str:
     """Genera y retorna el HTML sin guardar en disco (usado por Flask/Vercel)."""
     nombre   = partido_prensa["partido"]
-    fecha_ok = datetime.now().strftime("%d/%m/%Y %H:%M")
     todos    = todos_partidos or []
     n        = len(todos) if todos else 1
 
     from scraper_apuestas import get_api_uso
     topbar   = _topbar(todos, nombre, get_api_uso())
     sidebar  = _sidebar(n)
-    cards    = _match_cards(todos, nombre)
     panel    = _panel(partido_apuestas, partido_prensa, todos, "", todas_prensas)
     accuracy = _panel_accuracy()
 
@@ -1291,17 +1152,9 @@ def construir_html(partido_apuestas, partido_prensa: dict, todos_partidos: list 
   <div class="layout">
     {sidebar}
     <main class="center">
-      <div class="center-header">
-        <div>
-          <div class="center-title">⚽ Fútbol — FIFA World Cup 2026</div>
-          <div class="center-sub">{n} partidos disponibles con cuotas en tiempo real</div>
-        </div>
-        <div class="center-date">{fecha_ok}</div>
-      </div>
-      {cards}
+      {panel}
       {accuracy}
     </main>
-    {panel}
   </div>
   <script>{js}</script>
 </body>
@@ -1312,7 +1165,6 @@ def guardar_reporte(partido_apuestas, partido_prensa: dict, todos_partidos: list
                     todas_prensas: dict = None):
     nombre   = partido_prensa["partido"]
     fecha    = datetime.now().strftime("%Y-%m-%d")
-    fecha_ok = datetime.now().strftime("%d/%m/%Y %H:%M")
     todos    = todos_partidos or []
     n        = len(todos) if todos else 1
 
@@ -1326,7 +1178,6 @@ def guardar_reporte(partido_apuestas, partido_prensa: dict, todos_partidos: list
     from scraper_apuestas import get_api_uso
     topbar  = _topbar(todos, nombre, get_api_uso())
     sidebar = _sidebar(n)
-    cards   = _match_cards(todos, nombre)
     panel   = _panel(partido_apuestas, partido_prensa, todos, qr_b64, todas_prensas)
 
     todos_json = json.dumps(todos, ensure_ascii=False)
@@ -1345,16 +1196,8 @@ def guardar_reporte(partido_apuestas, partido_prensa: dict, todos_partidos: list
   <div class="layout">
     {sidebar}
     <main class="center">
-      <div class="center-header">
-        <div>
-          <div class="center-title">⚽ Fútbol — FIFA World Cup 2026</div>
-          <div class="center-sub">{n} partidos disponibles con cuotas en tiempo real</div>
-        </div>
-        <div class="center-date">{fecha_ok}</div>
-      </div>
-      {cards}
+      {panel}
     </main>
-    {panel}
   </div>
   <script>{js}</script>
 </body>

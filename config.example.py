@@ -19,6 +19,13 @@ ODDS_FORMAT  = "decimal"
 NEWS_LANG   = "es"
 NEWS_COUNTRY = "CL"
 
+# Resumen de prensa con IA (opcional)
+# Consigue una key gratuita en https://aistudio.google.com/apikey
+# Déjala vacía para usar el resumen por reglas (sin costo, sin dependencias externas).
+# Recomendado: solo configurarla localmente, no en Vercel (evita timeouts en producción).
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+GEMINI_MODEL   = "gemini-2.0-flash"
+
 # Directorios de salida
 BASE_DIR    = os.path.dirname(os.path.abspath(__file__))
 DATOS_DIR   = os.path.join(BASE_DIR, "datos")

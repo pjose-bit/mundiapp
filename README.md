@@ -67,6 +67,7 @@ python servidor.py
 - Busca predicciones, previas y análisis de ambos equipos
 - Sin API key requerida
 - Resultados en español (configurado para Chile)
+- **Resumen editorial con IA (opcional)**: si se configura `GEMINI_API_KEY`, el resumen se redacta con Gemini y agrega una conclusión explícita sobre cómo las bajas/lesionados detectados podrían afectar el resultado. Sin la key, se usa un resumen generado por reglas (palabras clave). Pensado solo para uso local — no configurar esta key en Vercel para evitar timeouts en producción.
 
 ---
 
@@ -79,6 +80,8 @@ python servidor.py
 | `ODDS_REGIONS` | Región de cuotas | `eu` (europeas/decimales) |
 | `MAX_ARTICULOS` | Artículos de prensa por búsqueda | `8` |
 | `BOOKMAKERS_PREFERIDOS` | Casas a destacar | bwin, coolbet, bet365, betfair |
+| `GEMINI_API_KEY` | Clave de Gemini para resumen de prensa con IA (opcional, solo local) | vacía |
+| `GEMINI_MODEL` | Modelo de Gemini a usar | `gemini-2.0-flash` |
 
 ---
 
