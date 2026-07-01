@@ -1114,7 +1114,7 @@ def construir_html(partido_apuestas, partido_prensa: dict, todos_partidos: list 
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0f172a">
-  <title>Mundial 2026 – {nombre}</title>
+  <title>Mundial 2026 – {nombre} | v2</title>
   <style>{CSS}</style>
 </head>
 <body>
