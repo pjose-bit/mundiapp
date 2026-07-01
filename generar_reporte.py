@@ -1153,6 +1153,108 @@ def _generar_qr_b64(url: str) -> str:
         return ""
 
 
+# ── Panel de exactitud histórica ──────────────────────────────────────────────
+
+def _panel_accuracy() -> str:
+    """Tarjeta de rendimiento: qué tan bien acertaron Poisson, apuestas y prensa."""
+    try:
+        from tracker import calcular_exactitud
+        stats = calcular_exactitud()
+    except Exception:
+        return ""
+
+    if stats["total"] == 0:
+        return ""
+
+    def _barra(pct, color):
+        if pct is None:
+            return '<span style="color:#94a3b8;font-size:11px;">Sin datos</span>'
+        w = max(4, int(pct))
+        return (f'<div style="display:flex;align-items:center;gap:8px;">'
+                f'<div style="flex:1;background:#e2e8f0;border-radius:99px;height:8px;">'
+                f'<div style="width:{w}%;background:{color};border-radius:99px;height:8px;"></div></div>'
+                f'<span style="font-size:12px;font-weight:700;color:{color};min-width:36px;">{pct}%</span></div>')
+
+    def _icono(pct):
+        if pct is None: return "—"
+        if pct >= 75:   return "🟢"
+        if pct >= 50:   return "🟡"
+        return "🔴"
+
+    pp = stats["poisson"];  pa = stats["apuestas"]; pr = stats["prensa"]
+
+    # Tabla de partidos recientes
+    filas = ""
+    for p in sorted(stats["partidos"], key=lambda x: x["fecha"], reverse=True)[:6]:
+        r  = p["resultado_real"]
+        gp = p.get("prediccion_poisson") or {}
+        ga = p.get("prediccion_apuestas") or {}
+        gr = p.get("prediccion_prensa") or {}
+
+        def _tick(pred, real):
+            if pred is None: return '<span style="color:#94a3b8">—</span>'
+            return '✅' if pred == real else '❌'
+
+        filas += f"""<tr style="border-bottom:1px solid #f1f5f9;">
+          <td style="padding:6px 8px;font-size:12px;font-weight:600;">{p['local']} vs {p['visitante']}</td>
+          <td style="padding:6px 8px;font-size:12px;text-align:center;">{r['marcador']}</td>
+          <td style="padding:6px 8px;font-size:13px;text-align:center;">{_tick(gp.get('ganador'), r['ganador'])}</td>
+          <td style="padding:6px 8px;font-size:13px;text-align:center;">{_tick(ga.get('ganador'), r['ganador'])}</td>
+          <td style="padding:6px 8px;font-size:13px;text-align:center;">{_tick(gr.get('ganador') if not gr.get('equilibrado') else None, r['ganador'])}</td>
+        </tr>"""
+
+    # Mejor casa de apuestas
+    bk_html = ""
+    if stats["bookmakers"]:
+        bk_rows = ""
+        for bk, v in list(stats["bookmakers"].items())[:5]:
+            bar = _barra(v["pct"], "#3b82f6")
+            bk_rows += f'<div style="margin-bottom:6px;"><div style="font-size:11px;color:#475569;margin-bottom:3px;">{bk} ({v["aciertos"]}/{v["total"]})</div>{bar}</div>'
+        bk_html = f"""
+        <div style="margin-top:16px;">
+          <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#64748b;margin-bottom:8px;">Casas de apuestas</div>
+          {bk_rows}
+        </div>"""
+
+    return f"""
+    <div style="margin-top:24px;background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:18px 20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div style="font-size:13px;font-weight:800;color:#1e293b;">📊 Rendimiento de predicciones — {stats['total']} partido(s)</div>
+        <div style="font-size:10px;color:#94a3b8;">Ganador del partido</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;">
+        <div style="background:#f0fdf4;border:1.5px solid #a7f3d0;border-radius:10px;padding:12px;">
+          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#10b981;margin-bottom:6px;">{_icono(pp['pct'])} Poisson</div>
+          {_barra(pp['pct'], '#10b981')}
+          <div style="font-size:10px;color:#64748b;margin-top:4px;">{pp['aciertos']}/{pp['total']} aciertos</div>
+        </div>
+        <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;padding:12px;">
+          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#3b82f6;margin-bottom:6px;">{_icono(pa['pct'])} Apuestas</div>
+          {_barra(pa['pct'], '#3b82f6')}
+          <div style="font-size:10px;color:#64748b;margin-top:4px;">{pa['aciertos']}/{pa['total']} aciertos</div>
+        </div>
+        <div style="background:#fdf4ff;border:1.5px solid #e9d5ff;border-radius:10px;padding:12px;">
+          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#a855f7;margin-bottom:6px;">{_icono(pr['pct'])} Prensa</div>
+          {_barra(pr['pct'], '#a855f7')}
+          <div style="font-size:10px;color:#64748b;margin-top:4px;">{pr['aciertos']}/{pr['total']} aciertos</div>
+        </div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr style="background:#f8fafc;">
+            <th style="padding:6px 8px;font-size:10px;text-align:left;color:#64748b;font-weight:700;">Partido</th>
+            <th style="padding:6px 8px;font-size:10px;text-align:center;color:#64748b;font-weight:700;">Resultado</th>
+            <th style="padding:6px 8px;font-size:10px;text-align:center;color:#10b981;font-weight:700;">📊 Poisson</th>
+            <th style="padding:6px 8px;font-size:10px;text-align:center;color:#3b82f6;font-weight:700;">🏦 Apuestas</th>
+            <th style="padding:6px 8px;font-size:10px;text-align:center;color:#a855f7;font-weight:700;">📰 Prensa</th>
+          </tr>
+        </thead>
+        <tbody>{filas}</tbody>
+      </table>
+      {bk_html}
+    </div>"""
+
+
 # ── Función principal ─────────────────────────────────────────────────────────
 
 def construir_html(partido_apuestas, partido_prensa: dict, todos_partidos: list = None,
@@ -1164,10 +1266,11 @@ def construir_html(partido_apuestas, partido_prensa: dict, todos_partidos: list 
     n        = len(todos) if todos else 1
 
     from scraper_apuestas import get_api_uso
-    topbar  = _topbar(todos, nombre, get_api_uso())
-    sidebar = _sidebar(n)
-    cards   = _match_cards(todos, nombre)
-    panel   = _panel(partido_apuestas, partido_prensa, todos, "", todas_prensas)
+    topbar   = _topbar(todos, nombre, get_api_uso())
+    sidebar  = _sidebar(n)
+    cards    = _match_cards(todos, nombre)
+    panel    = _panel(partido_apuestas, partido_prensa, todos, "", todas_prensas)
+    accuracy = _panel_accuracy()
 
     todos_json = json.dumps(todos, ensure_ascii=False)
     js = JS_TEMPLATE.replace("%TODOS_JSON%", todos_json)
@@ -1196,6 +1299,7 @@ def construir_html(partido_apuestas, partido_prensa: dict, todos_partidos: list 
         <div class="center-date">{fecha_ok}</div>
       </div>
       {cards}
+      {accuracy}
     </main>
     {panel}
   </div>

@@ -51,6 +51,16 @@ def _generar_dashboard(nombre_partido: str = None) -> str:
 
     todas_prensas = _todas_prensas_con_timeout(todos)
     prensa = todas_prensas.get(partido["partido"]) or _prensa_vacia(partido["local"], partido["visitante"])
+
+    # Guardar predicciones automáticamente para tracking futuro
+    try:
+        from tracker import guardar_prediccion
+        for p in todos:
+            pr = todas_prensas.get(p["partido"]) or _prensa_vacia(p["local"], p["visitante"])
+            guardar_prediccion(p, pr)
+    except Exception:
+        pass
+
     return construir_html(partido, prensa, todos, todas_prensas=todas_prensas)
 
 
