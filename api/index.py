@@ -21,16 +21,16 @@ def _prensa_vacia(local: str, visitante: str) -> dict:
     }
 
 
-def _prensa_con_timeout(local: str, visitante: str, timeout: int = 22) -> dict:
-    """Busca noticias reales; si supera el timeout devuelve estructura vacía."""
+def _todas_prensas_con_timeout(todos: list, timeout: int = 24) -> dict:
+    """Busca noticias para todos los partidos en paralelo con timeout global."""
     import concurrent.futures
-    from scraper_prensa import analizar_prensa
+    from scraper_prensa import analizar_prensa_todos
     with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-        future = executor.submit(analizar_prensa, local, visitante)
+        future = executor.submit(analizar_prensa_todos, todos, 4)
         try:
             return future.result(timeout=timeout)
         except Exception:
-            return _prensa_vacia(local, visitante)
+            return {}
 
 
 def _generar_dashboard(nombre_partido: str = None) -> str:
@@ -49,8 +49,9 @@ def _generar_dashboard(nombre_partido: str = None) -> str:
                 partido = p
                 break
 
-    prensa = _prensa_con_timeout(partido["local"], partido["visitante"])
-    return construir_html(partido, prensa, todos)
+    todas_prensas = _todas_prensas_con_timeout(todos)
+    prensa = todas_prensas.get(partido["partido"]) or _prensa_vacia(partido["local"], partido["visitante"])
+    return construir_html(partido, prensa, todos, todas_prensas=todas_prensas)
 
 
 @app.route("/")
