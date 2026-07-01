@@ -880,37 +880,49 @@ def _panel_conclusion(partido_apuestas, partido_prensa: dict) -> str:
             except ValueError:
                 pass
 
-    # ── Análisis combinado ─────────────────────────────────────────────
-    prob_local  = partido_apuestas.get("probabilidades", {}).get(local, 33)
-    prob_visita = partido_apuestas.get("probabilidades", {}).get(visita, 33)
-    tiene_ia    = any("inteligencia artificial" in p.lower() or "ia" in p.lower() for p in puntos)
+    # ── Estado de la prensa ────────────────────────────────────────────
+    has_articles    = (partido_prensa or {}).get("total_articulos", 0) > 0
+    press_equilib   = has_articles and press_fav is None
+    tiene_ia        = any("inteligencia artificial" in p.lower() or "ia" in p.lower() for p in puntos)
+
+    # ── Recomendación: siempre basada en Poisson; prensa confirma o advierte ──
+    recomendado = poisson_top
 
     if press_fav and press_score:
         acuerdo = press_score["marcador"] == poisson_top["marcador"]
+        diff_prob = poisson_top["prob"] - press_score["prob"]
         if acuerdo:
-            analisis = (f"Poisson y prensa <strong>coinciden</strong>: {press_fav} es favorito "
-                        f"y el modelo estadístico respalda ese resultado. "
-                        f"Alta confianza en <strong>{poisson_top['marcador']}</strong>.")
-            recomendado = poisson_top
-        else:
+            analisis = (f"✅ Poisson y prensa <strong>coinciden</strong>: ambos apuntan a "
+                        f"<strong>{press_fav}</strong> como ganador. "
+                        f"Alta confianza en <strong>{poisson_top['marcador']}</strong> ({poisson_top['prob']}%).")
+        elif diff_prob <= 4:
+            # Probabilidades muy cercanas → prensa inclina la balanza
             recomendado = press_score
-            analisis = (f"Prensa señala a <strong>{press_fav}</strong> como favorito "
+            analisis = (f"⚖️ Divergencia ajustada: Poisson prefiere {poisson_top['marcador']} ({poisson_top['prob']}%) "
+                        f"pero la prensa favorece a <strong>{press_fav}</strong> "
+                        f"(marcador {press_score['marcador']}, {press_score['prob']}%). "
+                        f"Probabilidades similares — la prensa inclina la recomendación.")
+        else:
+            # Poisson claramente superior en probabilidad → ignorar prensa para el marcador
+            analisis = (f"⚠️ Divergencia: la prensa favorece a <strong>{press_fav}</strong> "
                         f"(marcador alineado {press_score['marcador']}, {press_score['prob']}%), "
-                        f"mientras Poisson apunta a {poisson_top['marcador']} ({poisson_top['prob']}%). "
-                        f"Se recomienda el marcador con respaldo de prensa, pero hay divergencia — precaución.")
+                        f"pero Poisson da mayor probabilidad a <strong>{poisson_top['marcador']}</strong> "
+                        f"({poisson_top['prob']}%). Se recomienda el marcador estadístico.")
     elif press_fav and not press_score:
-        recomendado = poisson_top
-        analisis = (f"La prensa apunta a <strong>{press_fav}</strong>, pero ninguno de los "
-                    f"5 marcadores más probables del modelo Poisson alinea con ese favorito. "
-                    f"Se mantiene la recomendación estadística.")
+        analisis = (f"📰 Prensa señala a <strong>{press_fav}</strong> como favorito, pero ningún "
+                    f"marcador del top-5 Poisson alinea con ese resultado. "
+                    f"Se recomienda <strong>{poisson_top['marcador']}</strong> ({poisson_top['prob']}%) por estadística.")
+    elif press_equilib:
+        analisis = (f"📰 La prensa no identifica un favorito claro — partido equilibrado según los medios. "
+                    f"Recomendación basada en Poisson: <strong>{poisson_top['marcador']}</strong> ({poisson_top['prob']}%).")
     else:
-        recomendado = poisson_top
-        analisis = (f"Sin datos de prensa disponibles. Recomendación basada en modelo Poisson: "
-                    f"{'la diferencia de cuotas es clara' if abs(prob_local - prob_visita) > 15 else 'partido equilibrado según las apuestas'}, "
-                    f"marcador más probable <strong>{poisson_top['marcador']}</strong> ({poisson_top['prob']}%).")
+        analisis = (f"📊 Sin prensa cargada para este partido. "
+                    f"Recomendación basada en modelo Poisson: "
+                    f"<strong>{poisson_top['marcador']}</strong> ({poisson_top['prob']}%). "
+                    f"Selecciona el partido para cargar noticias en tiempo real.")
 
     if tiene_ia:
-        analisis += " <span style='color:#7c3aed;font-weight:700;'>Predicciones de IA disponibles en la prensa.</span>"
+        analisis += " <span style='color:#7c3aed;font-weight:700;'>· IA disponible en prensa.</span>"
 
     # ── Colores ────────────────────────────────────────────────────────
     def _colors(tipo):
@@ -920,7 +932,7 @@ def _panel_conclusion(partido_apuestas, partido_prensa: dict) -> str:
             "visita": ("#f43f5e", "#fff1f2", "#fecdd3"),
         }.get(tipo, ("#10b981", "#f0fdf4", "#a7f3d0"))
 
-    def _score_block(marcador_dict, label, color):
+    def _score_block(marcador_dict, label):
         tipo = marcador_dict["resultado"]
         c, bg, border = _colors(tipo)
         return f"""
@@ -930,11 +942,18 @@ def _panel_conclusion(partido_apuestas, partido_prensa: dict) -> str:
           <div style="font-size:10px;color:#64748b;margin-top:3px;">{marcador_dict["prob"]}%</div>
         </div>"""
 
+    def _press_placeholder(msg):
+        return f'<div style="text-align:center;padding:10px 14px;min-width:80px;color:#94a3b8;font-size:11px;border:1.5px dashed #e2e8f0;border-radius:10px;">{msg}</div>'
+
     ia_badge = '<span style="font-size:10px;background:#ede9fe;color:#7c3aed;padding:2px 8px;border-radius:99px;font-weight:700;margin-left:8px;">+ IA</span>' if tiene_ia else ""
 
-    poisson_block = _score_block(poisson_top, "📊 Poisson", "#10b981")
-    press_block   = _score_block(press_score, "📰 Prensa", "#3b82f6") if press_score else \
-                    f'<div style="text-align:center;padding:10px 14px;min-width:80px;color:#94a3b8;font-size:11px;">📰 Sin datos<br>de prensa</div>'
+    poisson_block = _score_block(poisson_top, "📊 Poisson")
+    if press_score:
+        press_block = _score_block(press_score, "📰 Prensa")
+    elif press_equilib:
+        press_block = _press_placeholder("⚖️ Prensa<br>equilibrada")
+    else:
+        press_block = _press_placeholder("📰 Prensa<br>no cargada")
 
     rec_tipo = recomendado["resultado"]
     rc, rbg, rborder = _colors(rec_tipo)
