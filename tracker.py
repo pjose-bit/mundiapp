@@ -78,10 +78,26 @@ def guardar_prediccion(partido_apuestas: dict, partido_prensa: dict):
 
     data = _cargar()
 
-    # No duplicar si ya existe
+    # Si ya existe snapshot, no sobreescribir
     for p in data["partidos"]:
         if p["id"] == pid:
             return
+
+    # No guardar si el partido ya empezó (cuotas en vivo ≠ predicción pre-partido)
+    already_started = bool(partido_apuestas.get("en_vivo"))
+    if not already_started:
+        commence_str = partido_apuestas.get("commence_time")
+        if commence_str:
+            try:
+                from datetime import timezone
+                ct = datetime.fromisoformat(commence_str.replace("Z", "+00:00"))
+                already_started = ct <= datetime.now(timezone.utc)
+            except Exception:
+                pass
+
+    if already_started:
+        print(f"  [tracker] Partido ya iniciado, cuotas en vivo — no se guarda snapshot: {local} vs {visita}")
+        return
 
     data["partidos"].append({
         "id":            pid,

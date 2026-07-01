@@ -209,7 +209,7 @@ def analizar_cuotas(partido: dict) -> dict:
                 })
 
     if not filas:
-        return {"partido": f"{local} vs {visitante}", "fecha": fecha, "datos": None}
+        return {"partido": f"{local} vs {visitante}", "fecha": fecha, "commence_time": partido["commence_time"], "datos": None}
 
     prom_1 = round(sum(cuotas_1) / len(cuotas_1), 2)
     prom_x = round(sum(cuotas_x) / len(cuotas_x), 2)
@@ -228,6 +228,7 @@ def analizar_cuotas(partido: dict) -> dict:
         "local": local,
         "visitante": visitante,
         "fecha": fecha,
+        "commence_time": partido["commence_time"],
         "tabla_bookmakers": filas,
         "promedios": {"1": prom_1, "X": prom_x, "2": prom_2},
         "probabilidades": {local: prob_1, "Empate": prob_x, visitante: prob_2},
