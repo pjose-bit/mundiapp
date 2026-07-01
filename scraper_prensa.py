@@ -8,8 +8,14 @@ import feedparser
 import requests
 from bs4 import BeautifulSoup
 import os
+import unicodedata
 from datetime import datetime
 from config import NEWS_LANG, NEWS_COUNTRY, MAX_ARTICULOS, DATOS_DIR
+
+
+def _sin_acentos(texto: str) -> str:
+    """Elimina acentos para comparación robusta: México → mexico, etc."""
+    return unicodedata.normalize('NFD', texto).encode('ascii', 'ignore').decode('utf-8').lower()
 
 
 GOOGLE_NEWS_RSS = (
@@ -118,11 +124,11 @@ def generar_resumen_prensa(articulos: list, equipo1: str, equipo2: str) -> dict:
     if not articulos:
         return {"texto": "", "puntos_clave": [], "fuentes_unicas": []}
 
-    e1 = equipo1.lower()
-    e2 = equipo2.lower()
+    e1 = _sin_acentos(equipo1)
+    e2 = _sin_acentos(equipo2)
     # También buscar por nombre en español si el equipo se ingresó en inglés
-    e1_alt = NOMBRES_ES.get(e1, e1)
-    e2_alt = NOMBRES_ES.get(e2, e2)
+    e1_alt = _sin_acentos(NOMBRES_ES.get(equipo1.lower(), equipo1))
+    e2_alt = _sin_acentos(NOMBRES_ES.get(equipo2.lower(), equipo2))
 
     KW_FAVORITO = ["favorit", "ganador", "ganar", "victoria", "vencer", "impon", "adelanta", "candidat", "mejor forma"]
     KW_LESION   = ["lesion", "baja", "ausenci", "no estará", "fuera del", "duda", "recuper", "sin jugar"]
@@ -141,8 +147,8 @@ def generar_resumen_prensa(articulos: list, equipo1: str, equipo2: str) -> dict:
         if fuente:
             todas_fuentes.add(fuente)
 
-        titulo  = a.get("titulo", "").lower()
-        snippet = a.get("resumen", "").lower()
+        titulo  = _sin_acentos(a.get("titulo", ""))
+        snippet = _sin_acentos(a.get("resumen", ""))
         texto   = titulo + " " + snippet
         orig    = a.get("resumen", "") or a.get("titulo", "")
 
@@ -164,16 +170,16 @@ def generar_resumen_prensa(articulos: list, equipo1: str, equipo2: str) -> dict:
         if any(kw in texto for kw in KW_LESION) and (menciona_e1 or menciona_e2) and orig and orig[:180] not in lesion_snippets:
             lesion_snippets.append(orig[:180])
 
-        # Goles / ataque
-        if any(kw in texto for kw in KW_GOLES) and orig and orig[:180] not in gol_snippets:
+        # Goles / ataque (solo si menciona a algún equipo del partido)
+        if any(kw in texto for kw in KW_GOLES) and (menciona_e1 or menciona_e2) and orig and orig[:180] not in gol_snippets:
             gol_snippets.append(orig[:180])
 
         # Forma
         if any(kw in texto for kw in KW_FORMA) and (menciona_e1 or menciona_e2) and orig and orig[:180] not in forma_snippets:
             forma_snippets.append(orig[:180])
 
-        # Predicciones IA
-        if any(kw in texto for kw in KW_IA) and orig and orig[:200] not in ia_snippets:
+        # Predicciones IA (solo si menciona a algún equipo del partido)
+        if any(kw in texto for kw in KW_IA) and (menciona_e1 or menciona_e2) and orig and orig[:200] not in ia_snippets:
             ia_snippets.append(orig[:200])
 
     # ── Construir texto resumen ─────────────────────────────────
