@@ -4,3 +4,6 @@ reportes/
 __pycache__/
 *.pyc
 *.pyo
+
+.vercel
+.env*
