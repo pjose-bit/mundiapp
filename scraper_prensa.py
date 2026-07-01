@@ -56,15 +56,18 @@ NOMBRES_ES = {
 }
 
 TERMINOS_BUSQUEDA = [
+    # Previa directa del partido
+    "{e1} vs {e2} octavos final mundial 2026",
     "{e1} vs {e2} prediccion mundial 2026",
-    "{e1} {e2} previa partido",
-    "{e1} lesionados mundial 2026",
-    "{e2} lesionados mundial 2026",
-    "{e1} {e2} pronostico",
+    "{e1} {e2} previa octavos de final",
+    "{e1} {e2} pronostico julio 2026",
+    # Lesionados y estado del equipo
+    "{e1} lesionados baja mundial 2026",
+    "{e2} lesionados baja mundial 2026",
     # Medios especializados
     "{e1} {e2} site:marca.com",
     "{e1} {e2} site:as.com",
-    "{e1} vs {e2} world cup site:espn.com",
+    "{e1} vs {e2} world cup round of 16 site:espn.com",
     "{e1} vs {e2} world cup prediction site:si.com",
     "{e1} vs {e2} site:fifa.com",
     # Predicciones de inteligencia artificial
@@ -281,20 +284,31 @@ def analizar_prensa(equipo1: str, equipo2: str) -> dict:
             except Exception:
                 pass
 
-    # Consolidar todos los artículos únicos por título
+    # Consolidar artículos únicos y filtrar los que no mencionan ningún equipo
+    e1_norm = _sin_acentos(equipo1)
+    e2_norm = _sin_acentos(equipo2)
+    e1_alt_norm = _sin_acentos(NOMBRES_ES.get(equipo1.lower(), equipo1))
+    e2_alt_norm = _sin_acentos(NOMBRES_ES.get(equipo2.lower(), equipo2))
+
     vistos = set()
     todos = []
     for arts in secciones.values():
         for a in arts:
-            if a["titulo"] not in vistos:
-                vistos.add(a["titulo"])
-                todos.append(a)
+            if a["titulo"] in vistos:
+                continue
+            texto_norm = _sin_acentos(a.get("titulo", "") + " " + a.get("resumen", ""))
+            menciona_e1 = e1_norm in texto_norm or e1_alt_norm in texto_norm
+            menciona_e2 = e2_norm in texto_norm or e2_alt_norm in texto_norm
+            if not (menciona_e1 or menciona_e2):
+                continue  # Descartar artículos que no hablan de ningún equipo del partido
+            vistos.add(a["titulo"])
+            todos.append(a)
 
     # Etiquetar artículos por tipo
     KW_IA_TAG = ["inteligencia artificial", "ia predice", "ai prediction", "machine learning",
                  "modelo predictivo", "algoritmo predice", "análisis predictivo"]
     for a in todos:
-        texto_tag = (a.get("titulo", "") + " " + a.get("resumen", "")).lower()
+        texto_tag = _sin_acentos(a.get("titulo", "") + " " + a.get("resumen", ""))
         fuente_lower = a.get("fuente", "").lower()
         a["es_ia"] = any(kw in texto_tag for kw in KW_IA_TAG)
         a["es_destacada"] = any(fd in fuente_lower for fd in FUENTES_DESTACADAS)
