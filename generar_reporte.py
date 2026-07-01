@@ -838,7 +838,7 @@ def _panel_scores(partido_apuestas, partido_prensa: dict) -> str:
 
 
 def _panel_conclusion(partido_apuestas, partido_prensa: dict) -> str:
-    """Tarjeta de conclusión: marcador recomendado combinando Poisson + prensa."""
+    """Tarjeta de conclusión: Poisson, prensa y análisis combinado."""
     if not partido_apuestas or not partido_apuestas.get("tabla_bookmakers"):
         return ""
 
@@ -854,60 +854,107 @@ def _panel_conclusion(partido_apuestas, partido_prensa: dict) -> str:
     resumen = (partido_prensa or {}).get("resumen_editorial", {}) or {}
     puntos  = resumen.get("puntos_clave", [])
 
+    # ── Favorito según prensa ──────────────────────────────────────────
     press_fav = None
     for p in puntos:
         if "Favorito de la prensa:" in p:
             press_fav = p.replace("Favorito de la prensa:", "").strip()
             break
 
-    # Buscar en los primeros 5 marcadores el que coincide con el favorito de prensa
-    recomendado = marcadores[0]
-    razon_alineado = False
+    # ── Marcador Poisson (top probabilidad) ───────────────────────────
+    poisson_top = marcadores[0]
+
+    # ── Marcador prensa (primer score que alinea con favorito de prensa) ──
+    press_score = None
     if press_fav:
-        fav_l  = press_fav.lower()
-        loc_l  = local.lower()
-        vis_l  = visita.lower()
+        fav_l = press_fav.lower()
+        loc_l = local.lower()
+        vis_l = visita.lower()
         es_local  = fav_l in loc_l or loc_l in fav_l
         es_visita = fav_l in vis_l or vis_l in fav_l
         for m in marcadores[:5]:
             try:
                 g1, g2 = map(int, m["marcador"].split("-"))
-                if es_local  and g1 > g2:
-                    recomendado = m; razon_alineado = True; break
-                if es_visita and g2 > g1:
-                    recomendado = m; razon_alineado = True; break
+                if es_local  and g1 > g2: press_score = m; break
+                if es_visita and g2 > g1: press_score = m; break
             except ValueError:
                 pass
 
-    tipo = recomendado["resultado"]
-    color  = {"local": "#10b981", "empate": "#64748b", "visita": "#f43f5e"}.get(tipo, "#10b981")
-    bg     = {"local": "#f0fdf4", "empate": "#f8fafc", "visita": "#fff1f2"}.get(tipo, "#f0fdf4")
-    border = {"local": "#a7f3d0", "empate": "#e2e8f0", "visita": "#fecdd3"}.get(tipo, "#a7f3d0")
+    # ── Análisis combinado ─────────────────────────────────────────────
+    prob_local  = partido_apuestas.get("probabilidades", {}).get(local, 33)
+    prob_visita = partido_apuestas.get("probabilidades", {}).get(visita, 33)
+    tiene_ia    = any("inteligencia artificial" in p.lower() or "ia" in p.lower() for p in puntos)
 
-    razones = []
-    if press_fav and razon_alineado:
-        razones.append(f"Prensa: favorito {press_fav}")
-    elif press_fav:
-        razones.append(f"Prensa: {press_fav} favorito (sin marcador alineado en top-5)")
-    razones.append(f"Probabilidad Poisson: {recomendado['prob']}%")
-    razon_txt = " &nbsp;·&nbsp; ".join(razones)
+    if press_fav and press_score:
+        acuerdo = press_score["marcador"] == poisson_top["marcador"]
+        if acuerdo:
+            analisis = (f"Poisson y prensa <strong>coinciden</strong>: {press_fav} es favorito "
+                        f"y el modelo estadístico respalda ese resultado. "
+                        f"Alta confianza en <strong>{poisson_top['marcador']}</strong>.")
+            recomendado = poisson_top
+        else:
+            recomendado = press_score
+            analisis = (f"Prensa señala a <strong>{press_fav}</strong> como favorito "
+                        f"(marcador alineado {press_score['marcador']}, {press_score['prob']}%), "
+                        f"mientras Poisson apunta a {poisson_top['marcador']} ({poisson_top['prob']}%). "
+                        f"Se recomienda el marcador con respaldo de prensa, pero hay divergencia — precaución.")
+    elif press_fav and not press_score:
+        recomendado = poisson_top
+        analisis = (f"La prensa apunta a <strong>{press_fav}</strong>, pero ninguno de los "
+                    f"5 marcadores más probables del modelo Poisson alinea con ese favorito. "
+                    f"Se mantiene la recomendación estadística.")
+    else:
+        recomendado = poisson_top
+        analisis = (f"Sin datos de prensa disponibles. Recomendación basada en modelo Poisson: "
+                    f"{'la diferencia de cuotas es clara' if abs(prob_local - prob_visita) > 15 else 'partido equilibrado según las apuestas'}, "
+                    f"marcador más probable <strong>{poisson_top['marcador']}</strong> ({poisson_top['prob']}%).")
 
-    tiene_ia = any("inteligencia artificial" in p.lower() or "ia" in p.lower() for p in puntos)
-    ia_note = '<span style="font-size:10px;background:#ede9fe;color:#7c3aed;padding:2px 8px;border-radius:99px;font-weight:700;margin-left:8px;">+ IA</span>' if tiene_ia else ""
+    if tiene_ia:
+        analisis += " <span style='color:#7c3aed;font-weight:700;'>Predicciones de IA disponibles en la prensa.</span>"
+
+    # ── Colores ────────────────────────────────────────────────────────
+    def _colors(tipo):
+        return {
+            "local":  ("#10b981", "#f0fdf4", "#a7f3d0"),
+            "empate": ("#64748b", "#f8fafc", "#e2e8f0"),
+            "visita": ("#f43f5e", "#fff1f2", "#fecdd3"),
+        }.get(tipo, ("#10b981", "#f0fdf4", "#a7f3d0"))
+
+    def _score_block(marcador_dict, label, color):
+        tipo = marcador_dict["resultado"]
+        c, bg, border = _colors(tipo)
+        return f"""
+        <div style="text-align:center;background:{bg};border:1.5px solid {border};border-radius:10px;padding:10px 14px;min-width:80px;">
+          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:{c};margin-bottom:4px;">{label}</div>
+          <div style="font-size:32px;font-weight:900;color:{c};letter-spacing:3px;line-height:1;">{marcador_dict["marcador"]}</div>
+          <div style="font-size:10px;color:#64748b;margin-top:3px;">{marcador_dict["prob"]}%</div>
+        </div>"""
+
+    ia_badge = '<span style="font-size:10px;background:#ede9fe;color:#7c3aed;padding:2px 8px;border-radius:99px;font-weight:700;margin-left:8px;">+ IA</span>' if tiene_ia else ""
+
+    poisson_block = _score_block(poisson_top, "📊 Poisson", "#10b981")
+    press_block   = _score_block(press_score, "📰 Prensa", "#3b82f6") if press_score else \
+                    f'<div style="text-align:center;padding:10px 14px;min-width:80px;color:#94a3b8;font-size:11px;">📰 Sin datos<br>de prensa</div>'
+
+    rec_tipo = recomendado["resultado"]
+    rc, rbg, rborder = _colors(rec_tipo)
 
     return f"""
-    <div style="background:{bg};border:2px solid {border};border-radius:14px;padding:16px 18px;margin-bottom:18px;">
-      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:{color};margin-bottom:10px;display:flex;align-items:center;">
-        🎯 Conclusión — Marcador recomendado{ia_note}
+    <div style="background:#f8fafc;border:2px solid #e2e8f0;border-radius:14px;padding:16px 18px;margin-bottom:18px;">
+      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:#334155;margin-bottom:12px;">
+        🎯 Análisis del partido{ia_badge}
       </div>
-      <div style="display:flex;align-items:center;gap:20px;">
-        <div style="font-size:44px;font-weight:900;color:{color};letter-spacing:4px;line-height:1;">
-          {recomendado["marcador"]}
+      <div style="display:flex;gap:10px;margin-bottom:14px;">
+        {poisson_block}
+        {press_block}
+        <div style="text-align:center;background:{rbg};border:2px solid {rborder};border-radius:10px;padding:10px 14px;min-width:80px;flex:1;">
+          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:{rc};margin-bottom:4px;">✅ Recomendado</div>
+          <div style="font-size:36px;font-weight:900;color:{rc};letter-spacing:3px;line-height:1;">{recomendado["marcador"]}</div>
+          <div style="font-size:10px;color:#64748b;margin-top:3px;">{recomendado["prob"]}%</div>
         </div>
-        <div>
-          <div style="font-size:14px;font-weight:800;color:#1e293b;margin-bottom:5px;">{local} vs {visita}</div>
-          <div style="font-size:11px;color:#64748b;line-height:1.7;">{razon_txt}</div>
-        </div>
+      </div>
+      <div style="font-size:11px;color:#475569;line-height:1.6;background:#fff;border-radius:8px;padding:10px 12px;border-left:3px solid {rc};">
+        {analisis}
       </div>
     </div>"""
 
