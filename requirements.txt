@@ -1,0 +1,10 @@
+requests
+beautifulsoup4
+pandas
+lxml
+feedparser
+colorama
+tabulate
+flask
+qrcode
+Pillow

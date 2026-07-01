@@ -1,0 +1,9 @@
+# Configuración local con API key (nunca subir)
+config.py
+
+# Archivos generados
+datos/
+reportes/
+__pycache__/
+*.pyc
+*.pyo
