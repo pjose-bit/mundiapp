@@ -12,7 +12,6 @@ app = Flask(__name__)
 
 
 def _prensa_vacia(local: str, visitante: str) -> dict:
-    """Devuelve estructura de prensa vacía para no depender del scraper en Vercel."""
     return {
         "partido": f"{local} vs {visitante}",
         "equipo1": local,
@@ -20,6 +19,18 @@ def _prensa_vacia(local: str, visitante: str) -> dict:
         "total_articulos": 0,
         "articulos": [],
     }
+
+
+def _prensa_con_timeout(local: str, visitante: str, timeout: int = 22) -> dict:
+    """Busca noticias reales; si supera el timeout devuelve estructura vacía."""
+    import concurrent.futures
+    from scraper_prensa import analizar_prensa
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(analizar_prensa, local, visitante)
+        try:
+            return future.result(timeout=timeout)
+        except Exception:
+            return _prensa_vacia(local, visitante)
 
 
 def _generar_dashboard(nombre_partido: str = None) -> str:
@@ -38,7 +49,7 @@ def _generar_dashboard(nombre_partido: str = None) -> str:
                 partido = p
                 break
 
-    prensa = _prensa_vacia(partido["local"], partido["visitante"])
+    prensa = _prensa_con_timeout(partido["local"], partido["visitante"])
     return construir_html(partido, prensa, todos)
 
 

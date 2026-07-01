@@ -255,16 +255,25 @@ def analizar_prensa(equipo1: str, equipo2: str) -> dict:
     """
     Recopila artículos de prensa sobre el partido equipo1 vs equipo2.
     Devuelve un dict con predicciones, lesionados y análisis de forma.
+    Las búsquedas RSS se hacen en paralelo para reducir el tiempo total.
     """
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
     print(f"\n  Buscando noticias: {equipo1} vs {equipo2}...")
 
+    queries = [t.format(e1=equipo1, e2=equipo2) for t in TERMINOS_BUSQUEDA]
     secciones = {}
 
-    for template in TERMINOS_BUSQUEDA:
-        query = template.format(e1=equipo1, e2=equipo2)
-        articulos = _buscar_rss(query, max_items=4)
-        if articulos:
-            secciones[query] = articulos
+    with ThreadPoolExecutor(max_workers=6) as executor:
+        future_to_query = {executor.submit(_buscar_rss, q, 4): q for q in queries}
+        for future in as_completed(future_to_query, timeout=18):
+            q = future_to_query[future]
+            try:
+                articulos = future.result()
+                if articulos:
+                    secciones[q] = articulos
+            except Exception:
+                pass
 
     # Consolidar todos los artículos únicos por título
     vistos = set()
